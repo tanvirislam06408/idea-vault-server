@@ -29,11 +29,20 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
-        const database = client.db('');
+        const database = client.db('ideas-vault');
+        const ideasColl= database.collection('ideas')
        
 
-
-
+        // get all ideas
+        app.get('/ideas',async(req,res)=>{
+            const result = await ideasColl.find().toArray();
+            res.send(result);
+        })
+        // get only 6 ideas data
+        app.get('/featured-ideas',async(req,res)=>{
+            const result = await ideasColl.find().limit(6).toArray();
+            res.send(result)
+        })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
