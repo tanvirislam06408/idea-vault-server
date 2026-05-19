@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
-const app=express();
+const app = express();
 const port = process.env.PORT || 5000
 
 // middleware
@@ -30,19 +30,55 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         const database = client.db('ideas-vault');
-        const ideasColl= database.collection('ideas')
-       
+        const ideasColl = database.collection('ideas')
+
 
         // get all ideas
-        app.get('/ideas',async(req,res)=>{
+        app.get('/ideas', async (req, res) => {
             const result = await ideasColl.find().toArray();
             res.send(result);
         })
+
+    // get single idea
+    app.get('/idea/:id',async(req,res)=>{
+        const id = req.params.id;
+        const query={
+            _id:new ObjectId(id)
+        }
+        const result = await ideasColl.findOne(query);
+        res.send(result)
+    })
+
+
         // get only 6 ideas data
-        app.get('/featured-ideas',async(req,res)=>{
+        app.get('/featured-ideas', async (req, res) => {
             const result = await ideasColl.find().limit(6).toArray();
             res.send(result)
         })
+
+
+        // post ideas in db
+        app.post('/ideas', async (req, res) => {
+            const data = req.body;
+            const result = await ideasColl.insertOne(data);
+            res.send(result);
+
+        })
+
+        // load user ideas
+        app.get('/userIdea/:id', async (req, res) => {
+            const id = req.params.id;
+
+            const query = {
+
+                'author.user_id' : id
+            }
+            const result = await ideasColl.find(query).toArray();
+            res.send(result)
+        })
+
+
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -57,12 +93,12 @@ run().catch(console.dir);
 
 
 
-app.get('/',(req,res)=>{
- res.send('server is getting hot')
+app.get('/', (req, res) => {
+    res.send('server is getting hot')
 })
 
 
-app.listen(port,()=>{
+app.listen(port, () => {
     console.log(`server in running in ${port}`);
-    
+
 })
