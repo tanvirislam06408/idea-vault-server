@@ -31,6 +31,7 @@ async function run() {
         await client.connect();
         const database = client.db('ideas-vault');
         const ideasColl = database.collection('ideas')
+        const commentsColl = database.collection('comments')
 
 
         // get all ideas
@@ -39,15 +40,25 @@ async function run() {
             res.send(result);
         })
 
-    // get single idea
-    app.get('/idea/:id',async(req,res)=>{
-        const id = req.params.id;
-        const query={
-            _id:new ObjectId(id)
-        }
-        const result = await ideasColl.findOne(query);
-        res.send(result)
-    })
+        // delete idea
+        app.delete('/ideas/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const result = await ideasColl.deleteOne(query);
+            res.send(result);
+        })
+
+        // get single idea
+        app.get('/ideas/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const result = await ideasColl.findOne(query);
+            res.send(result)
+        })
 
 
         // get only 6 ideas data
@@ -71,12 +82,73 @@ async function run() {
 
             const query = {
 
-                'author.user_id' : id
+                'author.user_id': id
             }
             const result = await ideasColl.find(query).toArray();
             res.send(result)
         })
 
+        // comments on post
+
+        app.post('/comments', async (req, res) => {
+            const data = req.body
+            const result = await commentsColl.insertOne(data);
+            res.send(result)
+        })
+
+        //  get all comments
+        app.get('/comments/:id', async (req, res) => {
+            const id = req.params.id
+            const query = {
+                'post_id': id
+            }
+            const result = await commentsColl.find(query).toArray();
+            res.send(result)
+        })
+
+        // update comment
+        app.patch('/comment/:id', async (req, res) => {
+            const id = req.params.id;
+            const comment = req.body;
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const updatedDoc = {
+                $set: comment
+            }
+            const result = await commentsColl.updateOne(query,updatedDoc);
+            res.send(result);
+        })
+
+
+
+
+        //delete ideas
+        app.delete('/comments/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const result = await commentsColl.deleteOne(query);
+            res.send(result)
+        })
+
+        // patch the idea like
+        app.patch('/ideas/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = {
+                _id: new ObjectId(id)
+            }
+            const updatedDoc = {
+
+                $inc: {
+                    'engagement.likes': 1
+                }
+            }
+
+            const result = await ideasColl.updateOne(filter, updatedDoc);
+            res.send(result)
+        })
 
 
         // Send a ping to confirm a successful connection
