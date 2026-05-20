@@ -178,7 +178,6 @@ async function run() {
 
         app.get('/searchIdea', async (req, res) => {
             const { search, sort, category } = req.query;
-            console.log(category);
 
             const query = {
 
@@ -190,7 +189,7 @@ async function run() {
                     $options: 'i'
                 }
             }
-            
+
             if (category) {
                 query['metadata.category'] = category
             }
