@@ -46,6 +46,7 @@ async function run() {
             const query = {
                 _id: new ObjectId(id)
             }
+            
             const result = await ideasColl.deleteOne(query);
             res.send(result);
         })
@@ -59,7 +60,22 @@ async function run() {
             const result = await ideasColl.findOne(query);
             res.send(result)
         })
+        
+        // update idea 
+        app.patch('/ideas/:id',async(req,res)=>{
+            const id = req.params.id;
+            const updatedIdea=req.body;
 
+
+            const updatedDoc={
+                $set:updatedIdea
+            }
+            const filter={
+                _id: new ObjectId(id)
+            };
+            const result = await ideasColl.updateOne(filter,updatedDoc);
+            res.send(result)
+        })
 
         // get only 6 ideas data
         app.get('/featured-ideas', async (req, res) => {
@@ -120,7 +136,16 @@ async function run() {
             res.send(result);
         })
 
+        // get a user interactions
 
+        app.get('/interactions/:id',async(req,res)=>{
+            const id= req.params.id;
+            const query={
+                'posted_by':id
+            }
+            const result=await commentsColl.find(query).toArray();
+            res.send(result);
+        })
 
 
         //delete ideas
