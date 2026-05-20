@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
         const database = client.db('ideas-vault');
         const ideasColl = database.collection('ideas')
         const commentsColl = database.collection('comments')
@@ -46,7 +46,7 @@ async function run() {
             const query = {
                 _id: new ObjectId(id)
             }
-            
+
             const result = await ideasColl.deleteOne(query);
             res.send(result);
         })
@@ -60,20 +60,20 @@ async function run() {
             const result = await ideasColl.findOne(query);
             res.send(result)
         })
-        
+
         // update idea 
-        app.patch('/ideas/:id',async(req,res)=>{
+        app.patch('/ideas/:id', async (req, res) => {
             const id = req.params.id;
-            const updatedIdea=req.body;
+            const updatedIdea = req.body;
 
 
-            const updatedDoc={
-                $set:updatedIdea
+            const updatedDoc = {
+                $set: updatedIdea
             }
-            const filter={
+            const filter = {
                 _id: new ObjectId(id)
             };
-            const result = await ideasColl.updateOne(filter,updatedDoc);
+            const result = await ideasColl.updateOne(filter, updatedDoc);
             res.send(result)
         })
 
@@ -132,18 +132,18 @@ async function run() {
             const updatedDoc = {
                 $set: comment
             }
-            const result = await commentsColl.updateOne(query,updatedDoc);
+            const result = await commentsColl.updateOne(query, updatedDoc);
             res.send(result);
         })
 
         // get a user interactions
 
-        app.get('/interactions/:id',async(req,res)=>{
-            const id= req.params.id;
-            const query={
-                'posted_by':id
+        app.get('/interactions/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                'posted_by': id
             }
-            const result=await commentsColl.find(query).toArray();
+            const result = await commentsColl.find(query).toArray();
             res.send(result);
         })
 
@@ -159,7 +159,7 @@ async function run() {
         })
 
         // patch the idea like
-        app.patch('/ideas/:id', async (req, res) => {
+        app.patch('/ideas-like/:id', async (req, res) => {
             const id = req.params.id
             const filter = {
                 _id: new ObjectId(id)
@@ -175,6 +175,45 @@ async function run() {
             res.send(result)
         })
 
+
+        app.get('/searchIdea', async (req, res) => {
+            const { search, sort, category } = req.query;
+            console.log(category);
+
+            const query = {
+
+            }
+
+            if (search) {
+                query.project_title = {
+                    $regex: search,
+                    $options: 'i'
+                }
+            }
+            
+            if (category) {
+                query['metadata.category'] = category
+            }
+
+
+            // sorting
+
+            let sortOption = {};
+            if (sort === 'newToOld') {
+                sortOption = { 'author.posted_date': -1 };
+            } else if (sort === 'oldToNew') {
+                sortOption = { 'author.posted_date': 1 };
+            }
+
+
+
+
+            const result = await ideasColl.find(query).sort(sortOption).toArray();
+            res.send(result)
+
+
+
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
