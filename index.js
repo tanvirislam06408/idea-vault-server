@@ -45,8 +45,6 @@ const verifyToken = async(req, res, next) => {
     }
     try{
             const { payload } = await jwtVerify(token, JWKS)
-            console.log('payload',payload);
-            
             next()
     }
     catch(error){
@@ -125,7 +123,7 @@ async function run() {
         })
 
         // load user ideas
-        app.get('/userIdea/:id', async (req, res) => {
+        app.get('/userIdea/:id',verifyToken, async (req, res) => {
             const id = req.params.id;
 
             const query = {
@@ -170,7 +168,7 @@ async function run() {
 
         // get a user interactions
 
-        app.get('/interactions/:id', async (req, res) => {
+        app.get('/interactions/:id',verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = {
                 'posted_by': id
