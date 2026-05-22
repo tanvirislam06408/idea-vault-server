@@ -8,10 +8,8 @@ const port = process.env.PORT || 5000
 
 // middleware
 app.use(express.json())
-app.use(cors());
 
-
-
+app.use(cors())
 
 
 
@@ -28,7 +26,7 @@ const client = new MongoClient(uri, {
 
 
 const JWKS = createRemoteJWKSet(
-    new URL('http://localhost:3000/api/auth/jwks')
+    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
 )
 
 //  verify the jwt token
